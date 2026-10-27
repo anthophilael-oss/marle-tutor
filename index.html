@@ -39,6 +39,7 @@
     }
 
     .container {
+      position: relative;
       max-width: 780px;
       width: 100%;
       height: 100%;
@@ -62,11 +63,7 @@
       flex-shrink: 0;
     }
 
-    .tutor {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
+    .tutor { display: flex; align-items: center; gap: 14px; }
 
     .avatar {
       font-size: 36px;
@@ -79,16 +76,8 @@
       border-radius: 50%;
     }
 
-    .tutor-label {
-      font-size: 14px;
-      color: var(--muted);
-    }
-
-    .tutor-name {
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--blue-dark);
-    }
+    .tutor-label { font-size: 14px; color: var(--muted); }
+    .tutor-name { font-size: 20px; font-weight: 700; color: var(--blue-dark); }
 
     .stars-box {
       font-size: 22px;
@@ -204,6 +193,96 @@
     .btn-model { background: var(--lilac); color: #4A3A8A; }
     .btn-model.speaking { background: var(--peach); color: #8A4B0F; }
 
+    /* ===== Reporte final ===== */
+    .report {
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+      display: none;
+      background: var(--card);
+      border-radius: 28px;
+      padding: 18px 22px;
+      overflow-y: auto;
+    }
+
+    .report.show { display: block; }
+
+    .report h2 { margin: 0 0 10px; font-size: 22px; color: var(--blue-dark); }
+    .report h3 { margin: 12px 0 6px; font-size: 16px; color: var(--text); }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 8px;
+    }
+
+    .metric {
+      background: var(--reading-bg);
+      border-radius: 14px;
+      padding: 8px 10px;
+      text-align: center;
+    }
+
+    .metric b { display: block; font-size: 22px; color: var(--blue-dark); }
+    .metric span { font-size: 12px; color: var(--muted); }
+
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+
+    .chip {
+      background: var(--peach);
+      color: #8A4B0F;
+      border-radius: 999px;
+      padding: 4px 12px;
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .chip.good { background: var(--mint); color: #1E6B48; }
+
+    .question {
+      background: var(--reading-bg);
+      border-radius: 14px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+    }
+
+    .question-text {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 8px;
+      font-weight: 700;
+    }
+
+    .options { display: flex; flex-wrap: wrap; gap: 8px; }
+
+    .option {
+      font-size: 15px;
+      padding: 8px 16px;
+      background: #FFFFFF;
+      color: var(--text);
+    }
+
+    .option.correct { background: var(--green); color: #FFFFFF; }
+    .option.wrong { background: var(--peach); color: #8A4B0F; }
+
+    .listen-q {
+      font-size: 14px;
+      padding: 4px 10px;
+      background: var(--lilac);
+      color: #4A3A8A;
+    }
+
+    .qresult { text-align: center; font-weight: 700; min-height: 22px; color: #1E6B48; }
+
+    .report-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
     @keyframes pulse {
       0%, 100% { opacity: 1; }
       50% { opacity: 0.65; }
@@ -220,7 +299,8 @@
       .container { padding: 12px; }
       .reading-box { font-size: 20px; }
       .controls { gap: 8px; }
-      button { flex: 1; justify-content: center; padding: 10px 12px; font-size: 15px; }
+      .controls button { flex: 1; justify-content: center; padding: 10px 12px; font-size: 15px; }
+      .metrics { grid-template-columns: repeat(2, 1fr); }
     }
   </style>
 </head>
@@ -248,6 +328,33 @@
     <button id="btnListen" class="btn-mic">🎤 <span id="btnListenText">Empezar a leer</span></button>
     <button id="btnReadAll" class="btn-model">🔊 <span id="btnReadAllText">Escuchar cuento completo</span></button>
   </div>
+
+  <!-- Reporte de desempeño y comprensión (al finalizar el cuento) -->
+  <div class="report" id="report">
+    <h2>🌟 Reporte de lectura de Lina</h2>
+    <div class="metrics">
+      <div class="metric"><b id="mAccuracy">0%</b><span>Precisión</span></div>
+      <div class="metric"><b id="mWcpm">0</b><span>Palabras correctas por minuto</span></div>
+      <div class="metric"><b id="mOmissions">0</b><span>Omisiones</span></div>
+      <div class="metric"><b id="mSubs">0</b><span>Sustituciones</span></div>
+      <div class="metric"><b id="mHesit">0</b><span>Vacilaciones (más de 3 s)</span></div>
+      <div class="metric"><b id="mSelf">0</b><span>Autocorrecciones</span></div>
+      <div class="metric"><b id="mIwl">0</b><span>Pausa entre palabras (cs)</span></div>
+      <div class="metric"><b id="mStars">0</b><span>Estrellas ⭐</span></div>
+    </div>
+
+    <h3>Palabras a practicar</h3>
+    <div class="chips" id="practiceList"></div>
+
+    <h3>Preguntas de comprensión</h3>
+    <div id="questions"></div>
+    <div class="qresult" id="qResult"></div>
+
+    <div class="report-actions">
+      <button id="btnAgain" class="btn-mic">🔁 Leer otra vez</button>
+      <button id="btnClose" class="btn-model">Cerrar</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -266,6 +373,12 @@
   ];
   const canonicalText = storyParagraphs.join('\n\n');
 
+  // Preguntas de comprensión del reporte final
+  const QUESTIONS = [
+    { q: '¿Qué día comenzó a llover?', options: ['El lunes', 'El viernes', 'El sábado'], answer: 2 },
+    { q: '¿Qué se le olvidó a Manu cuando salió corriendo a la lluvia?', options: ['El paraguas', 'El impermeable', 'Las botas'], answer: 1 }
+  ];
+
   // ===== Referencias al DOM =====
   const textContainer = document.getElementById('textContainer');
   const btnListen = document.getElementById('btnListen');
@@ -274,24 +387,34 @@
   const btnReadAllText = document.getElementById('btnReadAllText');
   const statusBanner = document.getElementById('statusBanner');
   const starsDisplay = document.getElementById('stars');
+  const reportEl = document.getElementById('report');
 
   // ===== Estado =====
   let allSpans = [];
+  let paragraphStarts = [];       // índice global de la primera palabra de cada párrafo
+  let paragraphEnds = [];         // índice global de la última palabra de cada párrafo
   let currentWordIndex = 0;
   let recognition = null;
   let isListening = false;
   let isNarrating = false;
   let starsCount = 0;
-  let consumedPerResult = {}; // palabras ya procesadas por resultado de reconocimiento
+  let consumedPerResult = {};     // palabras ya procesadas por resultado de reconocimiento
   let lastRestartAt = 0;
-  let isPausedForTTS = false;   // el micrófono está en pausa mientras suena la ayuda de Lina
-  let helpToken = 0;            // identifica la ayuda de voz más reciente
-  let narrationActiveIndex = -1; // palabra resaltada durante la lectura guiada
+  let isPausedForTTS = false;     // el micrófono está en pausa mientras habla Lina
+  let helpToken = 0;              // identifica la voz de Lina más reciente
+  let narrationActiveIndex = -1;  // palabra resaltada durante la lectura guiada
   let lastParagraphRewarded = -1; // último párrafo completado que ya dio estrellas
   let hesitationTimer = null;     // temporizador de ayuda espontánea
-  let paragraphEnds = [];         // índice global de la última palabra de cada párrafo
+  let hintedIndex = -1;           // palabra con la que Lina ya ayudó (una vez por palabra)
+  let drill = null;               // { start, end, resume } mientras se relee una frase
+  let stats = null;               // indicadores de lectura (profiling)
 
   const synth = window.speechSynthesis;
+
+  // El navegador solo recuerda el permiso del micrófono en https o localhost.
+  // Abierto como archivo (file://) lo vuelve a pedir cada vez que se inicia el reconocimiento.
+  const permissionPersists = location.protocol === 'https:' ||
+    location.hostname === 'localhost' || location.hostname === '127.0.0.1';
 
   // ===== Utilidades =====
   const PUNCT_REGEX = /[¿?¡!\-–—,.;:"“”«»'()\[\]{}_*\/\\#$%^&=~`]/g;
@@ -306,15 +429,88 @@
       .trim();
   }
 
+  // Texto de una palabra tal como se ve (con acentos), sin puntuación
+  function displayWord(index) {
+    return allSpans[index].textContent.replace(PUNCT_REGEX, '').trim();
+  }
+
   function setStatus(message, type) {
     statusBanner.textContent = message;
     statusBanner.className = 'status-banner' + (type ? ' ' + type : '');
+  }
+
+  // ===== Indicadores de lectura (profiling) =====
+  function resetStats() {
+    stats = {
+      omissions: 0,            // palabras saltadas sin leer
+      substitutions: 0,        // palabras reemplazadas o mal leídas
+      hesitations: 0,          // pausas de más de 3 segundos
+      selfCorrections: 0,      // error propio corregido por el niño
+      iwlSumMs: 0,             // suma de pausas entre palabras
+      iwlCount: 0,
+      errorWords: new Set(),       // omisiones y sustituciones (afectan la precisión)
+      hesitationWords: new Set(),  // palabras con vacilación
+      helpWords: new Set(),        // palabras en las que Lina o el niño pidió ayuda
+      activeMs: 0,             // tiempo total de lectura con el micrófono activo
+      segmentStart: null,
+      lastAdvanceAt: null,
+      pendingUnmatched: false  // se dijo algo que no coincidió con lo esperado
+    };
+  }
+
+  // Registra omisiones, sustituciones, autocorrecciones, vacilaciones y latencia
+  function registerAdvance(hit) {
+    if (drill) return; // la relectura de una frase no cuenta en el reporte
+    const now = Date.now();
+    const count = hit - currentWordIndex + 1;
+
+    if (stats.lastAdvanceAt !== null) {
+      const gap = now - stats.lastAdvanceAt;
+      stats.iwlSumMs += gap;
+      stats.iwlCount += count;
+      if (gap > 3000) {
+        stats.hesitations++;
+        stats.hesitationWords.add(currentWordIndex);
+      }
+    }
+
+    const skipped = hit - currentWordIndex;
+    for (let k = 0; k < skipped; k++) {
+      const idx = currentWordIndex + k;
+      if (k === 0 && stats.pendingUnmatched) stats.substitutions++;
+      else stats.omissions++;
+      stats.errorWords.add(idx);
+    }
+    if (skipped === 0 && stats.pendingUnmatched) stats.selfCorrections++;
+
+    stats.pendingUnmatched = false;
+    stats.lastAdvanceAt = now;
+  }
+
+  function computeReport() {
+    const total = allSpans.filter(s => s.dataset.clean !== '').length;
+    const errors = stats.errorWords.size;
+    const correct = Math.max(0, total - errors);
+    const accuracy = total ? Math.round((correct / total) * 100) : 0;
+    const minutes = Math.max(stats.activeMs / 60000, 1 / 60);
+    const wcpm = Math.round(correct / minutes);
+    const iwlCs = stats.iwlCount ? Math.round(stats.iwlSumMs / stats.iwlCount / 10) : 0;
+
+    const practiceIdx = new Set([...stats.errorWords, ...stats.hesitationWords, ...stats.helpWords]);
+    const practice = [];
+    [...practiceIdx].sort((a, b) => a - b).forEach(i => {
+      const w = displayWord(i).toLowerCase();
+      if (w && !practice.includes(w)) practice.push(w);
+    });
+
+    return { accuracy, wcpm, iwlCs, practice: practice.slice(0, 14) };
   }
 
   // ===== Renderizado =====
   function renderText() {
     textContainer.innerHTML = '';
     allSpans = [];
+    paragraphStarts = [];
     paragraphEnds = [];
     const paragraphs = canonicalText.split('\n\n');
     let globalIndex = 0;
@@ -322,12 +518,12 @@
     paragraphs.forEach(paragraphText => {
       const p = document.createElement('p');
       const words = paragraphText.trim().split(/\s+/);
+      paragraphStarts.push(globalIndex);
 
       words.forEach(wordText => {
-        const clean = normalize(wordText);
         const span = document.createElement('span');
         span.classList.add('word');
-        span.dataset.clean = clean;
+        span.dataset.clean = normalize(wordText);
         span.dataset.index = globalIndex;
         span.textContent = wordText;
         span.addEventListener('click', () => handleWordClick(wordText, span));
@@ -351,7 +547,7 @@
   function createUtterance(text) {
     const u = new SpeechSynthesisUtterance(text);
     u.lang = 'es-ES';
-    u.rate = 0.85;
+    u.rate = 0.85; // velocidad pausada para niños
     const voice = getSpanishVoice();
     if (voice) u.voice = voice;
     return u;
@@ -362,7 +558,7 @@
       if (callback) callback();
       return;
     }
-    synth.cancel();
+    synth.cancel(); // limpia la cola de audio anterior
     const u = createUtterance(text);
     if (callback) {
       u.onend = callback;
@@ -371,19 +567,17 @@
     synth.speak(u);
   }
 
-  // Tap-to-Help: pronuncia la palabra sola y la resalta en naranja.
-  // Si el micrófono está activo, se pausa mientras suena el audio y se reanuda al terminar.
-  function handleWordClick(wordText, element) {
-    const clean = wordText.replace(PUNCT_REGEX, '').trim();
-    if (!clean) return;
-    element.classList.add('helped');
-    setStatus(`Lina pronuncia: "${clean}"`, '');
-    clearTimeout(hesitationTimer);
-    if (isNarrating) stopNarration();
+  // Lina habla. Si el micrófono está activo, se pausa mientras suena la voz y se reanuda al terminar,
+  // así no escucha el altavoz ni marca palabras por error.
+  function hablarLina(texto, callback) {
+    if (!synth) {
+      if (callback) callback();
+      return;
+    }
 
     const myToken = ++helpToken;
-    const resumeListening = () => {
-      if (myToken !== helpToken) return; // hay una ayuda más reciente en curso
+    const reanudar = () => {
+      if (myToken !== helpToken) return; // hay una voz de Lina más reciente en curso
       isPausedForTTS = false;
       if (isListening && recognition) {
         if (permissionPersists) {
@@ -395,19 +589,33 @@
             // si aún se estaba deteniendo, onend lo reanudará
           }
         }
-        resetHesitationTimer();
+        verificarOmision();
       }
+      if (callback) callback();
     };
 
     if (isListening && recognition) {
       isPausedForTTS = true;
+      clearTimeout(hesitationTimer);
       // Con permiso persistente se detiene el micrófono. Sin él, detenerlo y reiniciarlo
       // volvería a pedir permiso, así que solo se ignora lo que oye mientras Lina habla.
       if (permissionPersists) {
         try { recognition.stop(); } catch (e) {}
       }
     }
-    speakText(clean, resumeListening);
+
+    speakText(texto, reanudar);
+  }
+
+  // Tap-to-Help: pronuncia la palabra sola y la resalta en naranja
+  function handleWordClick(wordText, element) {
+    const clean = wordText.replace(PUNCT_REGEX, '').trim();
+    if (!clean) return;
+    element.classList.add('helped');
+    if (isListening) stats.helpWords.add(Number(element.dataset.index));
+    setStatus(`Lina pronuncia: "${clean}"`, '');
+    if (isNarrating) stopNarration();
+    hablarLina(clean);
   }
 
   // ===== Modo lectura guiada (Escuchar cuento completo) =====
@@ -550,9 +758,10 @@
       }
 
       if (isPausedForTTS) return;
+
       const wait = Math.max(0, 300 - (Date.now() - lastRestartAt));
       setTimeout(() => {
-        if (!isListening) return;
+        if (!isListening || isPausedForTTS) return;
         try {
           lastRestartAt = Date.now();
           recognition.start();
@@ -594,20 +803,92 @@
     }
   }
 
-  // ===== Andamiaje proactivo (si el niño se traba) =====
-  function resetHesitationTimer() {
+  // ===== Andamiaje inmediato: omisión o vacilación =====
+  // Si pasan 4 segundos sin avanzar de palabra, Lina la pronuncia y pide repetirla
+  function verificarOmision() {
     clearTimeout(hesitationTimer);
     if (!isListening) return;
 
-    // Si pasan 4 segundos sin avanzar, Lina ofrece ayuda espontánea
     hesitationTimer = setTimeout(() => {
-      if (isListening && currentWordIndex < allSpans.length) {
-        const targetWord = allSpans[currentWordIndex].textContent.trim();
-        setStatus(`💡 Lina sugiere: Toca "${targetWord}" si necesitas escucharla.`, 'warn');
+      const palabra = allSpans[currentWordIndex];
+      if (!isListening || isPausedForTTS || !palabra || palabra.classList.contains('read')) return;
+      if (hintedIndex === currentWordIndex) return; // solo una ayuda por palabra
+      hintedIndex = currentWordIndex;
+
+      palabra.classList.add('helped'); // marca visual
+      if (!drill) stats.helpWords.add(currentWordIndex);
+      const texto = displayWord(currentWordIndex);
+      setStatus(`💡 Lina te ayuda con: "${texto}"`, 'warn');
+
+      if (stats.lastAdvanceAt === null && !drill) {
+        hablarLina(`Empecemos. La primera palabra es: ${texto}. Intenta decirla.`);
+      } else {
+        hablarLina(`Te saltaste esta palabra: ${texto}. Intenta decirla.`);
       }
     }, 4000);
   }
 
+  // ===== Frase de repaso (Phrase Drill) =====
+  function troubleCount(from, to) {
+    let n = 0;
+    for (let i = from; i <= to; i++) {
+      if (stats.errorWords.has(i) || stats.hesitationWords.has(i)) n++;
+    }
+    return n;
+  }
+
+  // Divide un párrafo en frases (terminan en . ! ?)
+  function sentencesOf(p) {
+    const sentences = [];
+    let start = paragraphStarts[p];
+    for (let i = paragraphStarts[p]; i <= paragraphEnds[p]; i++) {
+      if (/[.!?]["”»]?$/.test(allSpans[i].textContent) || i === paragraphEnds[p]) {
+        sentences.push([start, i]);
+        start = i + 1;
+      }
+    }
+    return sentences;
+  }
+
+  // Lina modela la frase con más dificultades y el niño la relee
+  function startPhraseDrill(p) {
+    let best = null;
+    let bestCount = 0;
+    sentencesOf(p).forEach(([s, e]) => {
+      const c = troubleCount(s, e);
+      if (c > bestCount) { best = [s, e]; bestCount = c; }
+    });
+    if (!best) return false;
+
+    const [s, e] = best;
+    for (let i = s; i <= e; i++) allSpans[i].className = 'word';
+    drill = { start: s, end: e, resume: paragraphEnds[p] + 1 };
+    hintedIndex = -1;
+    currentWordIndex = s;
+    skipEmptyTokens();
+    focusCurrent();
+
+    const frase = allSpans.slice(s, e + 1).map(w => w.textContent).join(' ').replace(/[-–—]/g, ' ');
+    setStatus('🔁 Vamos a releer esta frase juntas. Escucha a Lina y léela otra vez.', 'warn');
+    hablarLina('Vamos a releer esta frase juntas. ' + frase);
+    return true;
+  }
+
+  function finishDrill() {
+    const resume = drill.resume;
+    drill = null;
+    hintedIndex = -1;
+    currentWordIndex = resume;
+    skipEmptyTokens();
+    if (currentWordIndex >= allSpans.length) {
+      completeReading();
+      return;
+    }
+    focusCurrent();
+    setStatus('¡Excelente relectura! Seguimos con el cuento.', '');
+  }
+
+  // ===== Procesar palabras habladas =====
   function processSpokenWords(spokenWords) {
     let advanced = false;
 
@@ -626,52 +907,174 @@
         if (matches(spoken, expected)) { hit = currentWordIndex + look; break; }
       }
 
-      if (hit >= 0) {
-        allSpans[currentWordIndex].classList.remove('active');
-        while (currentWordIndex <= hit) {
-          markRead(currentWordIndex);
-          currentWordIndex++;
-        }
-        skipEmptyTokens();
-        advanced = true;
+      if (hit < 0) {
+        stats.pendingUnmatched = true; // algo dicho que no coincide: posible sustitución
+        return;
       }
+
+      registerAdvance(hit);
+      allSpans[currentWordIndex].classList.remove('active');
+      while (currentWordIndex <= hit) {
+        markRead(currentWordIndex);
+        currentWordIndex++;
+      }
+      skipEmptyTokens();
+      advanced = true;
     });
 
-    if (advanced) {
-      resetHesitationTimer();
+    if (!advanced) return;
+    verificarOmision();
 
-      // Premio progresivo: +2 estrellas por cada párrafo completado
-      while (lastParagraphRewarded + 1 < paragraphEnds.length &&
-             paragraphEnds[lastParagraphRewarded + 1] < currentWordIndex) {
-        lastParagraphRewarded++;
-        starsCount += 2;
-        starsDisplay.textContent = starsCount;
-      }
-
-      if (currentWordIndex >= allSpans.length) {
-        completeReading();
+    // Durante la relectura de una frase no se dan estrellas ni se avanza el cuento
+    if (drill) {
+      if (currentWordIndex > drill.end) {
+        finishDrill();
         return;
       }
       focusCurrent();
-      setStatus('¡Muy bien! Sigue leyendo sobre Manu...', '');
+      setStatus('Vuelve a leer la frase. ¡Tú puedes!', '');
+      return;
     }
+
+    // Refuerzo positivo: +2 estrellas por cada párrafo completado
+    let message = '¡Muy bien! Sigue leyendo sobre Manu...';
+    let drillParagraph = -1;
+    while (lastParagraphRewarded + 1 < paragraphEnds.length &&
+           paragraphEnds[lastParagraphRewarded + 1] < currentWordIndex) {
+      lastParagraphRewarded++;
+      starsCount += 2;
+      starsDisplay.textContent = starsCount;
+      message = `⭐ +2 estrellas por completar el párrafo ${lastParagraphRewarded + 1}. ¡Sigue así!`;
+
+      // Si hubo varios errores en el párrafo, se prepara una relectura de la frase más difícil
+      const p = lastParagraphRewarded;
+      if (drillParagraph < 0 && troubleCount(paragraphStarts[p], paragraphEnds[p]) >= 2) {
+        drillParagraph = p;
+      }
+    }
+
+    if (drillParagraph >= 0 && startPhraseDrill(drillParagraph)) return;
+
+    if (currentWordIndex >= allSpans.length) {
+      completeReading();
+      return;
+    }
+    focusCurrent();
+    setStatus(message, '');
   }
 
-  // ===== Fin de la lectura =====
+  // ===== Fin de la lectura: reporte y comprensión =====
   function completeReading() {
     stopListening();
     starsCount += 15;
     starsDisplay.textContent = starsCount;
+
+    const report = computeReport();
+    showReport(report);
     setStatus('🎉 ¡Felicidades! Terminaste de leer "El impermeable rojo de Manu". ¡Ganaste 15 estrellas! ⭐', 'celebrate');
-    speakText('¡Felicidades! Leíste todo el cuento del impermeable rojo de Manu. ¡Ganaste quince estrellas!');
+    speakText(`¡Felicidades! Leíste todo el cuento del impermeable rojo de Manu. Ganaste quince estrellas. ` +
+      `Tu precisión fue de ${report.accuracy} por ciento y leíste ${report.wcpm} palabras correctas por minuto. ` +
+      `Ahora responde dos preguntas.`);
+  }
+
+  function showReport(report) {
+    document.getElementById('mAccuracy').textContent = report.accuracy + '%';
+    document.getElementById('mWcpm').textContent = report.wcpm;
+    document.getElementById('mOmissions').textContent = stats.omissions;
+    document.getElementById('mSubs').textContent = stats.substitutions;
+    document.getElementById('mHesit').textContent = stats.hesitations;
+    document.getElementById('mSelf').textContent = stats.selfCorrections;
+    document.getElementById('mIwl').textContent = report.iwlCs;
+    document.getElementById('mStars').textContent = starsCount;
+
+    const practiceList = document.getElementById('practiceList');
+    practiceList.innerHTML = '';
+    if (report.practice.length === 0) {
+      const chip = document.createElement('span');
+      chip.className = 'chip good';
+      chip.textContent = '¡Ninguna! Leíste todo muy bien';
+      practiceList.appendChild(chip);
+    } else {
+      report.practice.forEach(w => {
+        const chip = document.createElement('span');
+        chip.className = 'chip';
+        chip.textContent = w;
+        chip.style.cursor = 'pointer';
+        chip.addEventListener('click', () => speakText(w));
+        practiceList.appendChild(chip);
+      });
+    }
+
+    renderQuestions();
+    reportEl.classList.add('show');
+    reportEl.scrollTop = 0;
+  }
+
+  function renderQuestions() {
+    const box = document.getElementById('questions');
+    const result = document.getElementById('qResult');
+    box.innerHTML = '';
+    result.textContent = '';
+    let answered = 0;
+    let correct = 0;
+
+    QUESTIONS.forEach(item => {
+      const wrap = document.createElement('div');
+      wrap.className = 'question';
+
+      const title = document.createElement('p');
+      title.className = 'question-text';
+      const label = document.createElement('span');
+      label.textContent = item.q;
+      const listen = document.createElement('button');
+      listen.className = 'listen-q';
+      listen.textContent = '🔊';
+      listen.addEventListener('click', () => speakText(item.q));
+      title.appendChild(label);
+      title.appendChild(listen);
+      wrap.appendChild(title);
+
+      const options = document.createElement('div');
+      options.className = 'options';
+      const buttons = [];
+      let done = false;
+
+      item.options.forEach((text, idx) => {
+        const b = document.createElement('button');
+        b.className = 'option';
+        b.textContent = text;
+        b.addEventListener('click', () => {
+          if (done) return;
+          done = true;
+          answered++;
+          if (idx === item.answer) {
+            correct++;
+            b.classList.add('correct');
+            speakText('¡Correcto!');
+          } else {
+            b.classList.add('wrong');
+            buttons[item.answer].classList.add('correct');
+            speakText('Casi. La respuesta es: ' + item.options[item.answer]);
+          }
+          if (answered === QUESTIONS.length) {
+            result.textContent = `Comprensión: ${correct} de ${QUESTIONS.length} respuestas correctas`;
+          }
+        });
+        buttons.push(b);
+        options.appendChild(b);
+      });
+
+      wrap.appendChild(options);
+      box.appendChild(wrap);
+    });
+  }
+
+  function hideReport() {
+    reportEl.classList.remove('show');
+    if (synth) synth.cancel();
   }
 
   // ===== Control del micrófono =====
-  // El navegador solo recuerda el permiso del micrófono en https o localhost.
-  // Abierto como archivo (file://) lo vuelve a pedir cada vez que se inicia el reconocimiento.
-  const permissionPersists = location.protocol === 'https:' ||
-    location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-
   // Solo consulta el estado del permiso. El único aviso real lo lanza recognition.start(),
   // así que ya no hay una segunda petición con getUserMedia.
   async function ensureMic() {
@@ -690,10 +1093,10 @@
   }
 
   async function startListening() {
-    if (!recognition) return;
+    if (!recognition || isListening) return;
     setStatus('Acepta el permiso del micrófono cuando el navegador te lo pida.', '');
     const ok = await ensureMic();
-    if (!ok) return;
+    if (!ok || isListening) return;
     if (isNarrating) stopNarration();
     if (synth) synth.cancel();
 
@@ -701,14 +1104,20 @@
     if (currentWordIndex >= allSpans.length || currentWordIndex === 0) {
       currentWordIndex = 0;
       lastParagraphRewarded = -1;
+      hintedIndex = -1;
+      drill = null;
+      resetStats();
       allSpans.forEach(s => s.className = 'word');
     }
     skipEmptyTokens();
 
     isListening = true;
+    isPausedForTTS = false;
     consumedPerResult = {};
+    stats.segmentStart = Date.now();
+    stats.lastAdvanceAt = null;
     focusCurrent();
-    resetHesitationTimer();
+    verificarOmision();
 
     try {
       lastRestartAt = Date.now();
@@ -727,6 +1136,13 @@
     isListening = false;
     isPausedForTTS = false;
     clearTimeout(hesitationTimer);
+
+    if (stats && stats.segmentStart !== null) {
+      stats.activeMs += Date.now() - stats.segmentStart;
+      stats.segmentStart = null;
+    }
+    if (stats) stats.lastAdvanceAt = null;
+
     if (recognition) {
       try { recognition.stop(); } catch (e) {}
     }
@@ -754,11 +1170,18 @@
     }
   });
 
+  document.getElementById('btnClose').addEventListener('click', hideReport);
+  document.getElementById('btnAgain').addEventListener('click', () => {
+    hideReport();
+    startListening();
+  });
+
   if (synth && typeof synth.onvoiceschanged !== 'undefined') {
     synth.onvoiceschanged = () => {};
   }
 
   // ===== Inicialización =====
+  resetStats();
   renderText();
   setupSpeechRecognition();
   // Al abrir la app se pide el permiso y, en cuanto se acepta, empieza a escuchar sola
